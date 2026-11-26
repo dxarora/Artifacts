@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trimesh &amp; Shapely: Usage Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=Big+Shoulders+Display:wght@700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1426;--card:#111d36;--ink:#d8e2f2;--mute:#8497b8;--amber:#ffb23e;--cyan:#4fd8e8;--line:#233559;--code:#08101f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="dark"]){color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f6fb;--card:#fff;--ink:#16223b;--mute:#566a8c;--amber:#b86a00;--cyan:#0a7f90;--line:#cfd8ea;--code:#eef2fa;color-scheme:light}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 'IBM Plex Mono',ui-monospace,monospace;padding:16px;max-width:820px;margin-inline:auto}
+h1{font:700 34px/1 'Big Shoulders Display',Impact,sans-serif;letter-spacing:.04em;color:var(--amber);margin:8px 0 4px}
+h2{font:700 22px 'Big Shoulders Display',Impact,sans-serif;color:var(--cyan);margin:0 0 6px;letter-spacing:.04em}
+p{margin:6px 0 10px}.sub{color:var(--mute)}
+nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav button{flex:none;background:var(--card);color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:7px 11px;font:inherit;cursor:pointer}
+nav button.on{color:var(--bg);background:var(--amber);border-color:var(--amber)}
+section{display:none}section.on{display:block}
+.box{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:12px 0}
+.tip{border-left:3px solid var(--amber)}
+.pre{position:relative}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;margin:8px 0;font-size:12.5px;line-height:1.5}
+.cp{position:absolute;top:6px;right:6px;background:var(--card);color:var(--mute);border:1px solid var(--line);border-radius:4px;font:11px inherit;padding:2px 7px;cursor:pointer}
+.k{color:var(--cyan)}.a{color:var(--amber)}code.i{color:var(--amber)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}td,th{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}th{color:var(--cyan)}
+.wrap{overflow-x:auto}
+canvas{width:240px;height:240px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:var(--code)}
+label{display:block;margin:6px 0}input[type=range]{width:100%;accent-color:var(--amber)}
+.out{color:var(--amber)}
+a{color:var(--cyan)}
+</style></head><body>
+<h1>TRIMESH &amp; SHAPELY</h1>
+<div class="sub">Usage-first guide. Goal: slice a solid on an x/y/z grid, then get each element’s volume and centre.</div>
+<nav id="nav"></nav>
+
+<section id="s1"><h2>1 · Create bodies</h2>
+<p>Everything is a <code class="i">Trimesh</code> (vertices + faces). Primitives live in <code class="i">trimesh.creation</code>.</p>
+<div class="pre"><pre>import numpy as np, trimesh
+
+box  = trimesh.creation.box(extents=[4, 2, 1])
+cyl  = trimesh.creation.cylinder(radius=0.5, height=3)
+ball = trimesh.creation.icosphere(subdivisions=3, radius=1)
+ring = trimesh.creation.annulus(r_min=1, r_max=2, height=3)
+
+# move / rotate
+cyl.apply_translation([1, 0, 0])
+R = trimesh.transformations.rotation_matrix(np.pi/2, [0, 1, 0])
+cyl.apply_transform(R)
+
+# booleans (need: pip install manifold3d)
+plate = box.difference(cyl)      # also .union() / .intersection()
+
+# view or export
+trimesh.Scene([plate]).show()    # needs pyglet or a notebook
+plate.export("plate.stl")
+m = trimesh.load("plate.stl")    # load back</pre></div>
+<div class="box tip">Slicing with <b>cap=True</b> and reliable volumes need a <b>watertight</b> mesh. Always check <code class="i">mesh.is_watertight</code> after booleans or loading STL.</div></section>
+
+<section id="s2"><h2>2 · Inspect properties</h2>
+<div class="wrap"><table>
+<tr><th>Property</th><th>Meaning</th></tr>
+<tr><td>mesh.volume</td><td>Enclosed volume (valid if watertight)</td></tr>
+<tr><td>mesh.center_mass</td><td>True centroid of the solid, uniform density. <b>Use this for element centres.</b></td></tr>
+<tr><td>mesh.centroid</td><td>Area-weighted surface centroid. Not the solid’s centre.</td></tr>
+<tr><td>mesh.bounds</td><td>[[xmin,ymin,zmin],[xmax,ymax,zmax]]</td></tr>
+<tr><td>mesh.is_watertight</td><td>Closed surface? Required for volume/capping</td></tr>
+<tr><td>mesh.area</td><td>Surface area</td></tr>
+<tr><td>mesh.split()</td><td>List of disconnected bodies</td></tr>
+<tr><td>mesh.contains(pts)</td><td>Boolean per point: inside?</td></tr>
+</table></div>
+<div class="pre"><pre>m = trimesh.creation.annulus(r_min=1, r_max=2, height=3)
+print(m.is_watertight, m.volume)   # True, pi*(4-1)*3 = 28.27
+print(m.center_mass)               # ~[0, 0, 0]
+print(m.bounds)
+
+m.contains([[1.5, 0, 0], [0, 0, 0]])   # [True, False] (hole in the middle)</pre></div></section>
+
+<section id="s3"><h2>3 · Slice with planes</h2>
+<p>Two different tools. Pick by what you need back.</p>
+<div class="box"><b class="a">slice_plane</b>: cuts the solid, keeps the side the normal points to. <code class="i">cap=True</code> closes the cut so the piece is a solid again.</div>
+<div class="pre"><pre>origin = [0, 0, 1.0]
+normal = [0, 0, 1]
+upper = m.slice_plane(origin, normal,  cap=True)   # z &gt;= 1
+lower = m.slice_plane(origin, -np.array(normal), cap=True)  # z &lt;= 1
+print(upper.volume + lower.volume, m.volume)       # equal</pre></div>
+<div class="box"><b class="a">section / section_multiplane</b>: returns the <i>outline</i> where a plane meets the mesh (a Path), not a solid.</div>
+<div class="pre"><pre>path = m.section(plane_origin=[0,0,0], plane_normal=[0,0,1])  # Path3D
+
+# many parallel sections at once (heights along the normal)
+paths = m.section_multiplane(
+    plane_origin=m.bounds[0], plane_normal=[0,0,1],
+    heights=np.arange(0.25, 3.0, 0.5))      # list of Path2D (None if no hit)</pre></div>
+<div class="box tip"><b>Which to use?</b> Solids and volumes: <code class="i">slice_plane</code>. Cross-section area, outlines, 2D analysis: <code class="i">section</code> + shapely.</div></section>
+
+<section id="s4"><h2>4 · Shapely: 2D cross-sections</h2>
+<p>A section becomes a flat <code class="i">Path2D</code>; its <code class="i">polygons_full</code> are shapely <code class="i">Polygon</code> objects (holes included).</p>
+<div class="pre"><pre>path3d = m.section([0,0,0], [0,0,1])
+path2d, to_3D = path3d.to_2D()       # older versions: to_planar()
+
+for poly in path2d.polygons_full:    # shapely Polygons
+    print(poly.area)                 # pi*(4-1) = 9.42
+    print(poly.centroid)             # section centroid (2D)
+    print(poly.bounds, len(poly.interiors))
+
+# back to 3D: apply the transform to the 2D point
+c = poly.centroid
+pt3d = trimesh.transform_points([[c.x, c.y, 0]], to_3D)[0]
+
+# shapely extras
+poly.buffer(0.1)                     # offset
+poly.intersection(other_poly)        # 2D booleans
+poly.contains(shapely.geometry.Point(1.5, 0))</pre></div>
+<div class="box tip">Use case: slice a wing or fuselage at stations along x, read <code class="i">poly.area</code>, centroid and <code class="i">poly.bounds</code> at each station to get an envelope.</div></section>
+
+<section id="s5"><h2>5 · Full recipe: your objective</h2>
+<p>Slab by slab along each axis, <code class="i">split()</code> after each pass so disconnected bodies inside one cell become separate elements.</p>
+<div class="pre"><pre>import numpy as np, trimesh
+
+def _cut(mesh, n, a, b):
+    s = mesh.slice_plane(n * a, n, cap=True)          # keep &gt;= a
+    if s is None or len(s.faces) == 0: return None
+    s = s.slice_plane(n * b, -n, cap=True)            # keep &lt;= b
+    return None if s is None or len(s.faces) == 0 else s
+
+def slice_grid(mesh, step):
+    lo, hi = mesh.bounds
+    pieces = [mesh]
+    for ax in range(3):
+        n = np.eye(3)[ax]
+        edges = np.arange(lo[ax], hi[ax] + step[ax], step[ax])
+        out = []
+        for p in pieces:
+            for a, b in zip(edges[:-1], edges[1:]):
+                s = _cut(p, n, a, b)
+                if s is not None:
+                    out.extend(s.split(only_watertight=False))
+        pieces = out
+    return pieces
+
+body = trimesh.creation.annulus(r_min=1, r_max=2, height=3)
+els = slice_grid(body, step=(0.5, 0.5, 0.5))
+
+vols = np.array([e.volume for e in els])
+ctrs = np.array([e.center_mass for e in els])
+print(len(els), vols.sum(), body.volume)    # sums must match
+
+# mark centres
+dots = [trimesh.creation.icosphere(radius=0.04).apply_translation(c) for c in ctrs]
+trimesh.Scene(els + dots).show()</pre></div>
+<div class="box tip"><b>Checks.</b> Sum of volumes equals <code class="i">body.volume</code>. Drop slivers with <code class="i">vols &gt; 1e-9</code>. If the sum is off, a piece was not watertight (check <code class="i">is_watertight</code> before capping). For exact analytic shapes, CadQuery is an alternative.</div></section>
+
+<section id="s6"><h2>6 · Try it: elements vs planes</h2>
+<p>A U-shaped body (2D stand-in for a concave solid). Change the number of cuts. Dots mark each element’s centroid. Notice that one cell can hold <b>two</b> elements, because the body, not the planes, defines them.</p>
+<label>x cuts: <span id="vx" class="out"></span><input id="cx" type="range" min="0" max="6" value="1"></label>
+<label>y cuts: <span id="vy" class="out"></span><input id="cy" type="range" min="0" max="6" value="2"></label>
+<canvas id="cv" width="240" height="240"></canvas>
+<p>Elements: <span id="ne" class="out"></span> · Σ area = <span id="sa" class="out"></span> (body = <span id="ba" class="out"></span>)</p></section>
+
+<div class="box sub">Docs: <a href="https://trimesh.org/">trimesh.org</a> (API reference, examples gallery) · <a href="https://shapely.readthedocs.io/">shapely manual</a>. Method names above follow the trimesh docs; check your installed version for <code class="i">to_2D</code> vs <code class="i">to_planar</code>.</div>
+
+<script>
+const secs=[["Create","s1"],["Inspect","s2"],["Slice","s3"],["Shapely","s4"],["Recipe","s5"],["Try it","s6"]];
+const nav=document.getElementById("nav");
+secs.forEach(([t,id],i)=>{const b=document.createElement("button");b.textContent=(i+1)+" "+t;b.onclick=()=>show(id);b.dataset.id=id;nav.appendChild(b)});
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));
+nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===id));window.scrollTo(0,0)}
+show("s1");
+document.querySelectorAll(".pre").forEach(d=>{const b=document.createElement("button");b.className="cp";b.textContent="copy";
+b.onclick=async()=>{try{await navigator.clipboard.writeText(d.querySelector("pre").innerText);b.textContent="copied"}catch(e){b.textContent="select+copy"}setTimeout(()=>b.textContent="copy",1200)};d.appendChild(b)});
+// demo
+const N=120,mask=new Uint8Array(N*N);
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){const o=x>=10&&x<110&&y>=10&&y<110,h=x>=40&&x<80&&y<85;mask[y*N+x]=o&&!h?1:0}
+let bodyA=mask.reduce((a,b)=>a+b,0);
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+function run(){
+const cx=+document.getElementById("cx").value,cy=+document.getElementById("cy").value;
+vx.textContent=cx;vy.textContent=cy;
+const nx=cx+1,ny=cy+1,x0=10,y0=10,w=100,cell=(x,y)=>Math.min(nx-1,Math.floor((x-x0)/w*nx))+nx*Math.min(ny-1,Math.floor((y-y0)/w*ny));
+const lab=new Int32Array(N*N).fill(-1);let n=0;const comps=[];
+for(let s=0;s<N*N;s++){if(!mask[s]||lab[s]>=0)continue;const c=cell(s%N,(s/N)|0),st=[s];lab[s]=n;let a=0,sx=0,sy=0;
+while(st.length){const p=st.pop(),x=p%N,y=(p/N)|0;a++;sx+=x;sy+=y;
+for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=N||Y>=N)continue;const q=Y*N+X;
+if(mask[q]&&lab[q]<0&&cell(X,Y)===c){lab[q]=n;st.push(q)}}}
+comps.push([a,sx/a,sy/a]);n++}
+ctx.clearRect(0,0,240,240);
+for(let p=0;p<N*N;p++)if(lab[p]>=0){ctx.fillStyle=`hsl(${(lab[p]*67)%360},55%,45%)`;ctx.fillRect((p%N)*2,((p/N)|0)*2,2,2)}
+ctx.strokeStyle="#ffb23e";ctx.lineWidth=1;
+for(let i=1;i<nx;i++){const x=(x0+w*i/nx)*2;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,240);ctx.stroke()}
+for(let j=1;j<ny;j++){const y=(y0+w*j/ny)*2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(240,y);ctx.stroke()}
+ctx.fillStyle="#fff";comps.forEach(c=>{ctx.beginPath();ctx.arc(c[1]*2,c[2]*2,3,0,7);ctx.fill()});
+ne.textContent=n;sa.textContent=comps.reduce((a,c)=>a+c[0],0);ba.textContent=bodyA}
+document.getElementById("cx").oninput=run;document.getElementById("cy").oninput=run;run();
+</script></body></html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trimesh and Shapely reference by task</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Big+Shoulders+Display:wght@700;800&display=swap">
+<style>
+:root{--bg:#f3f5f9;--panel:#fff;--ink:#14213d;--mute:#5b6784;--line:#d5dbe8;--amber:#b86e00;--cyan:#00758f;--code:#eaeef6;--hi:#fff1d6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1226;--panel:#111b36;--ink:#e6ebf7;--mute:#8d9bbd;--line:#223156;--amber:#ffb23e;--cyan:#4fd6f0;--code:#0a1226;--hi:#2a2412;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1226;--panel:#111b36;--ink:#e6ebf7;--mute:#8d9bbd;--line:#223156;--amber:#ffb23e;--cyan:#4fd6f0;--code:#0a1226;--hi:#2a2412;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 "IBM Plex Mono",ui-monospace,Menlo,monospace}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font:800 clamp(34px,8vw,56px)/1 "Big Shoulders Display",Impact,sans-serif;margin:8px 0 4px;letter-spacing:.01em}
+.sub{color:var(--mute);margin:0 0 16px;max-width:60ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:10px 0;z-index:5;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+input[type=search]{width:100%;padding:10px 12px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;font:inherit}
+button,.chip{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--amber);color:var(--amber)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+h2{font:700 28px/1.1 "Big Shoulders Display",Impact,sans-serif;margin:30px 0 4px;color:var(--amber)}
+.gd{color:var(--mute);margin:0 0 10px}
+details{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cyan);border-radius:6px;margin:8px 0}
+details.sh{border-left-color:var(--amber)}
+summary{cursor:pointer;padding:10px 12px;display:flex;gap:10px;align-items:baseline;list-style:none}
+summary::-webkit-details-marker{display:none}
+.nm{font-weight:500;word-break:break-word}
+.ds{color:var(--mute);font-size:13px;flex:1}
+.tag{font-size:12px;color:var(--cyan)}
+.sh .tag{color:var(--amber)}
+.body{padding:2px 14px 14px}
+.body h4{margin:12px 0 4px;font-size:13px;color:var(--mute);font-weight:400}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;margin:4px 0;font:inherit;font-size:13px}
+ul{margin:0;padding-left:18px}
+li{margin:2px 0}
+.act{display:flex;gap:6px;margin-top:10px}
+.on{border-color:var(--amber);background:var(--hi)}
+.empty{color:var(--mute);padding:30px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Trimesh and Shapely by task</h1>
+<p class="sub">Find the call you need by what you’re trying to do. Open any entry for its parameters, return value and a runnable example. Based on the official trimesh and shapely docs; check them for rarely used options.</p>
+<div class="bar">
+<input type="search" id="q" placeholder="Search names, descriptions, parameters" aria-label="Search">
+<div class="row" id="filters"></div>
+</div>
+<div id="out"></div>
+<p class="sub" style="margin-top:30px" id="foot"></p>
+</div>
+<script>
+// [task, lib, name, signature, description, params, returns, example]
+const D=[
+["Load and create","trimesh","trimesh.load","trimesh.load(file_obj, file_type=None, force=None, **kwargs)","Read a mesh, scene or path from a file.","file_obj: path or file-like; file_type: extension if file_obj has none; force: 'mesh' flattens a Scene into one Trimesh","Trimesh, Scene or Path depending on the file","mesh = trimesh.load('part.stl', force='mesh')"],
+["Load and create","trimesh","trimesh.Trimesh","trimesh.Trimesh(vertices, faces, process=True, **kwargs)","Build a mesh from raw arrays.","vertices: (n,3) floats; faces: (m,3) vertex indices; process: merge duplicate vertices and clean up","Trimesh","m = trimesh.Trimesh(vertices=v, faces=f)"],
+["Load and create","trimesh","creation.box","trimesh.creation.box(extents=None, transform=None, bounds=None)","Axis-aligned box solid.","extents: (3,) side lengths; transform: 4x4 placement; bounds: (2,3) min and max corners","Trimesh","b = trimesh.creation.box(extents=[2,1,1])"],
+["Load and create","trimesh","creation.cylinder","trimesh.creation.cylinder(radius=1.0, height=1.0, sections=None, transform=None)","Cylinder along z, centered on the origin.","radius, height; sections: number of facets around the circle; transform: 4x4 placement","Trimesh","c = trimesh.creation.cylinder(radius=0.5, height=3)"],
+["Load and create","trimesh","creation.icosphere","trimesh.creation.icosphere(subdivisions=3, radius=1.0)","Sphere made of near-equal triangles.","subdivisions: higher is smoother; radius","Trimesh","s = trimesh.creation.icosphere(radius=2)"],
+["Load and create","trimesh","creation.extrude_polygon","trimesh.creation.extrude_polygon(polygon, height, transform=None, **kwargs)","Turn a shapely Polygon into a solid by extruding it along z. The bridge from shapely to 3D.","polygon: shapely Polygon (holes allowed); height: extrusion distance; transform: 4x4 placement","Trimesh","solid = trimesh.creation.extrude_polygon(poly, 5)"],
+["Inspect and measure","trimesh","mesh.bounds","mesh.bounds","Corners of the axis-aligned bounding box.","none (property)","(2,3) array: [min xyz, max xyz]","lo, hi = mesh.bounds"],
+["Inspect and measure","trimesh","mesh.extents","mesh.extents","Size of the bounding box along x, y, z.","none (property)","(3,) array","mesh.extents"],
+["Inspect and measure","trimesh","mesh.volume","mesh.volume","Enclosed volume. Only trustworthy if the mesh is watertight.","none (property)","float","print(mesh.volume)"],
+["Inspect and measure","trimesh","mesh.area","mesh.area","Total surface area.","none (property)","float","mesh.area"],
+["Inspect and measure","trimesh","mesh.centroid","mesh.centroid","Center of the surface (area-weighted), not of the solid.","none (property)","(3,) array","mesh.centroid"],
+["Inspect and measure","trimesh","mesh.center_mass","mesh.center_mass","Center of mass assuming uniform density. Use this for the centroid of a solid body.","none (property); set mesh.density first if needed","(3,) array","cm = mesh.center_mass"],
+["Inspect and measure","trimesh","mesh.moment_inertia","mesh.moment_inertia","Inertia tensor about the center of mass.","none (property)","(3,3) array","I = mesh.moment_inertia"],
+["Inspect and measure","trimesh","mesh.is_watertight","mesh.is_watertight","True if every edge is shared by exactly two faces, meaning the mesh has no holes.","none (property)","bool","mesh.is_watertight"],
+["Inspect and measure","trimesh","mesh.is_volume","mesh.is_volume","Watertight, consistently wound and with positive volume. Check before trusting volume.","none (property)","bool","mesh.is_volume"],
+["Inspect and measure","trimesh","mesh.contains","mesh.contains(points)","Test whether points lie inside the solid.","points: (n,3) array","(n,) bool array","mesh.contains([[0,0,0]])"],
+["Inspect and measure","trimesh","mesh.nearest.on_surface","mesh.nearest.on_surface(points)","Closest surface point for each query point.","points: (n,3) array","(closest, distance, triangle_id)","c, d, t = mesh.nearest.on_surface(pts)"],
+["Repair","trimesh","mesh.fill_holes","mesh.fill_holes()","Close small holes so the mesh becomes watertight.","none","bool: True if the mesh is now watertight","mesh.fill_holes()"],
+["Repair","trimesh","mesh.fix_normals","mesh.fix_normals()","Make face winding consistent and point normals outward.","none","None (modifies mesh)","mesh.fix_normals()"],
+["Repair","trimesh","mesh.merge_vertices","mesh.merge_vertices()","Weld vertices at the same position. Often what makes a split or volume work.","none","None (modifies mesh)","mesh.merge_vertices()"],
+["Slice and section","trimesh","mesh.section","mesh.section(plane_origin, plane_normal)","Cut the mesh with one plane and get the outline of the cut.","plane_origin: (3,) point on plane; plane_normal: (3,) normal","Path3D, or None if the plane misses","path = mesh.section([0,0,1], [0,0,1])"],
+["Slice and section","trimesh","mesh.section_multiplane","mesh.section_multiplane(plane_origin, plane_normal, heights)","Many parallel cuts in one call, already flattened to 2D. Best for slicing at intervals.","plane_origin: (3,) reference point; plane_normal: (3,); heights: offsets along the normal","list of Path2D, with None where a plane misses","secs = mesh.section_multiplane([0,0,0],[0,0,1], np.arange(0,10,1.0))"],
+["Slice and section","trimesh","Path3D.to_planar","path.to_planar(to_2D=None, normal=None, check=True)","Flatten a 3D section path into a 2D path.","to_2D: optional 4x4 transform; normal: plane normal to use; check: verify the path is planar","(Path2D, 4x4 transform back to 3D)","p2d, T = path.to_planar()"],
+["Slice and section","trimesh","Path2D.polygons_full","path2d.polygons_full","Closed shapes of the cut as shapely Polygons, holes included. Where trimesh hands over to shapely.","none (property)","list of shapely Polygon","polys = p2d.polygons_full"],
+["Slice and section","trimesh","Path2D.area","path2d.area","Enclosed area of the cross-section.","none (property)","float","p2d.area"],
+["Slice and section","trimesh","Path2D.extrude","path2d.extrude(height, **kwargs)","Extrude each closed shape to a solid.","height: distance","Trimesh, or list of Trimesh","solid = p2d.extrude(2)"],
+["Slice and section","trimesh","mesh.slice_plane","mesh.slice_plane(plane_origin, plane_normal, cap=False, **kwargs)","Cut the solid and keep one side, discarding the rest. The kept side is where the normal points.","plane_origin, plane_normal; cap=True closes the cut face (needs a triangulation engine such as mapbox_earcut)","Trimesh","half = mesh.slice_plane([0,0,5],[0,0,-1], cap=True)"],
+["Split bodies","trimesh","mesh.split","mesh.split(only_watertight=True, adjacency=None, **kwargs)","Separate a mesh into disconnected bodies. Use after slicing to get each body-formed piece.","only_watertight: drop pieces that are not closed solids; adjacency: custom face connectivity","list of Trimesh","for part in mesh.split(): print(part.volume, part.center_mass)"],
+["Split bodies","trimesh","boolean.intersection","trimesh.boolean.intersection(meshes, engine=None, **kwargs)","Region shared by all meshes. Intersect with a box to get a slab between two planes.","meshes: list of Trimesh; engine: 'manifold' or 'blender' (manifold3d is the easy install)","Trimesh","slab = trimesh.boolean.intersection([mesh, box])"],
+["Split bodies","trimesh","boolean.union","trimesh.boolean.union(meshes, engine=None, **kwargs)","Merge meshes into one solid.","same as intersection","Trimesh","u = trimesh.boolean.union([a, b])"],
+["Split bodies","trimesh","boolean.difference","trimesh.boolean.difference(meshes, engine=None, **kwargs)","Subtract later meshes from the first.","same as intersection","Trimesh","d = trimesh.boolean.difference([a, b])"],
+["Transform","trimesh","mesh.apply_transform","mesh.apply_transform(matrix)","Apply a 4x4 transform in place.","matrix: (4,4) homogeneous transform","self (modified)","mesh.apply_transform(T)"],
+["Transform","trimesh","mesh.apply_translation","mesh.apply_translation(translation)","Move the mesh in place.","translation: (3,) offset","self (modified)","mesh.apply_translation([1,0,0])"],
+["Transform","trimesh","mesh.apply_scale","mesh.apply_scale(scaling)","Scale in place, uniform or per axis.","scaling: float or (3,)","self (modified)","mesh.apply_scale(0.001)"],
+["Transform","trimesh","mesh.copy","mesh.copy()","Independent copy, so you can transform without touching the original.","none","Trimesh","m2 = mesh.copy()"],
+["Transform","trimesh","transformations.rotation_matrix","trimesh.transformations.rotation_matrix(angle, direction, point=None)","4x4 rotation about an axis.","angle: radians; direction: (3,) axis; point: pivot, default origin","(4,4) array","T = trimesh.transformations.rotation_matrix(np.pi/2,[0,0,1])"],
+["Export and view","trimesh","mesh.export","mesh.export(file_obj=None, file_type=None, **kwargs)","Write the mesh to a file or bytes.","file_obj: path or file; file_type: stl, obj, ply, glb and others","None when writing a path, else bytes or str","mesh.export('out.stl')"],
+["Export and view","trimesh","mesh.show","mesh.show(**kwargs)","Open an interactive viewer (needs pyglet).","none required","viewer window","mesh.show()"],
+["Export and view","trimesh","trimesh.Scene","trimesh.Scene(geometry=None, **kwargs)","Container for several meshes and paths to view or export together. Handy for drawing slices and centroids.","geometry: a mesh, path or list of them","Scene","trimesh.Scene([mesh, path]).show()"],
+["Export and view","trimesh","trimesh.points.PointCloud","trimesh.points.PointCloud(vertices, colors=None)","Display points such as centroids.","vertices: (n,3); colors: optional","PointCloud","pc = trimesh.points.PointCloud(centroids)"],
+["Build 2D shapes","shapely","Polygon","shapely.Polygon(shell, holes=None)","A filled 2D region with optional holes.","shell: list of (x,y); holes: list of rings","Polygon","p = Polygon([(0,0),(4,0),(4,3)])"],
+["Build 2D shapes","shapely","box","shapely.geometry.box(minx, miny, maxx, maxy)","Rectangle polygon.","corner coordinates","Polygon","r = box(0,0,5,2)"],
+["Build 2D shapes","shapely","Point and LineString","Point(x, y); LineString(coords)","Basic point and polyline geometries.","coordinates","Point, LineString","pt = Point(1,2)"],
+["Build 2D shapes","shapely","make_valid","shapely.make_valid(geometry)","Repair a bowtie or self-touching shape into a valid one.","geometry","valid geometry, may become a collection","good = shapely.make_valid(bad)"],
+["Measure 2D","shapely","geom.area","geom.area","Area of a polygon.","none (property)","float","p.area"],
+["Measure 2D","shapely","geom.length","geom.length","Perimeter of a polygon or length of a line.","none (property)","float","p.length"],
+["Measure 2D","shapely","geom.centroid","geom.centroid","Geometric center of the shape. Use on each slice polygon to get section centroids.","none (property)","Point","p.centroid.coords[0]"],
+["Measure 2D","shapely","geom.bounds","geom.bounds","Bounding box.","none (property)","(minx, miny, maxx, maxy)","p.bounds"],
+["Measure 2D","shapely","geom.is_valid","geom.is_valid","Check that the geometry follows shapely’s rules.","none (property)","bool","p.is_valid"],
+["Measure 2D","shapely","geom.exterior","polygon.exterior","Outer ring of a polygon. Inner holes are in polygon.interiors.","none (property)","LinearRing","list(p.exterior.coords)"],
+["Combine and edit 2D","shapely","geom.intersection","a.intersection(b)","Area shared by both shapes.","b: another geometry","geometry","a.intersection(b)"],
+["Combine and edit 2D","shapely","geom.union","a.union(b)","Merge two shapes.","b: another geometry","geometry","a.union(b)"],
+["Combine and edit 2D","shapely","geom.difference","a.difference(b)","Remove b from a.","b: another geometry","geometry","a.difference(b)"],
+["Combine and edit 2D","shapely","ops.unary_union","shapely.ops.unary_union(geoms)","Merge many shapes at once, faster than repeated union.","geoms: iterable of geometries","geometry","merged = unary_union(polys)"],
+["Combine and edit 2D","shapely","ops.split","shapely.ops.split(geom, splitter)","Cut a shape along a line.","geom: shape to cut; splitter: LineString or similar","GeometryCollection of pieces","pieces = split(p, LineString([(2,-1),(2,5)]))"],
+["Combine and edit 2D","shapely","geom.buffer","geom.buffer(distance, quad_segs=16, cap_style='round', join_style='round')","Grow or shrink a shape. buffer(0) also fixes some invalid polygons.","distance: negative shrinks; quad_segs: segments per quarter circle","geometry","p.buffer(-0.5)"],
+["Combine and edit 2D","shapely","geom.simplify","geom.simplify(tolerance, preserve_topology=True)","Remove vertices within a tolerance.","tolerance: max deviation","geometry","p.simplify(0.01)"],
+["Combine and edit 2D","shapely","affinity.translate","shapely.affinity.translate(geom, xoff=0.0, yoff=0.0)","Move a shape. Also rotate, scale and affine_transform.","xoff, yoff","geometry","translate(p, 2, 1)"],
+["Test relations","shapely","geom.contains","a.contains(b)","True if b lies entirely inside a.","b: geometry","bool","p.contains(Point(1,1))"],
+["Test relations","shapely","geom.intersects","a.intersects(b)","True if the shapes share any point.","b: geometry","bool","a.intersects(b)"],
+["Test relations","shapely","geom.distance","a.distance(b)","Shortest distance between shapes.","b: geometry","float","a.distance(b)"]
+];
+const $=id=>document.getElementById(id);
+let S={f:{},l:{}},lib="all",view="all";
+try{S=JSON.parse(localStorage.getItem("tmsh")||"{}");S.f=S.f||{};S.l=S.l||{}}catch(e){S={f:{},l:{}}}
+const save=()=>{try{localStorage.setItem("tmsh",JSON.stringify(S))}catch(e){}};
+const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+function chips(){const f=$("filters");f.textContent="";
+[["all","All libraries"],["trimesh","Trimesh"],["shapely","Shapely"]].forEach(([k,t])=>{const b=mk("button","chip",t);b.setAttribute("aria-pressed",lib===k);b.onclick=()=>{lib=k;chips();render()};f.append(b)});
+[["all","Everything"],["fav","Favorites"],["todo","Not learned yet"]].forEach(([k,t])=>{const b=mk("button","chip",t);b.setAttribute("aria-pressed",view===k);b.onclick=()=>{view=k;chips();render()};f.append(b)});
+const th=mk("button","","Theme");th.onclick=()=>{const r=document.documentElement;const d=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark"};f.append(th)}
+function render(){
+const q=$("q").value.toLowerCase().trim(),o=$("out");o.textContent="";let n=0,last="";
+const open=!!q;
+D.forEach(e=>{const[g,l,name,sig,ds,pa,re,ex]=e;
+if(lib!=="all"&&l!==lib)return;
+if(view==="fav"&&!S.f[name])return;
+if(view==="todo"&&S.l[name])return;
+if(q&&!(name+sig+ds+pa+re).toLowerCase().includes(q))return;
+if(g!==last){o.append(mk("h2","",g));last=g}
+n++;
+const d=mk("details",l==="shapely"?"sh":"");d.open=open&&n<6;
+const s=mk("summary");
+s.append(mk("span","tag",l),mk("span","nm",name),mk("span","ds",ds));
+const b=mk("div","body");
+b.append(mk("h4","","Signature"),Object.assign(mk("pre"),{textContent:sig}));
+b.append(mk("h4","","Parameters"));const ul=mk("ul");pa.split("; ").forEach(p=>ul.append(mk("li","",p)));b.append(ul);
+b.append(mk("h4","","Returns"),mk("div","",re));
+b.append(mk("h4","","Example"),Object.assign(mk("pre"),{textContent:ex}));
+const a=mk("div","act");
+const fb=mk("button",S.f[name]?"on":"",S.f[name]?"Favorited":"Favorite");
+fb.onclick=()=>{S.f[name]=!S.f[name];save();render()};
+const lb=mk("button",S.l[name]?"on":"",S.l[name]?"Learned":"Mark learned");
+lb.onclick=()=>{S.l[name]=!S.l[name];save();render()};
+const cb=mk("button","","Copy example");
+cb.onclick=()=>{try{navigator.clipboard.writeText(ex);cb.textContent="Copied"}catch(x){cb.textContent="Select and copy"}};
+a.append(fb,lb,cb);b.append(a);d.append(s,b);o.append(d)});
+if(!n)o.append(mk("div","empty","No matches. Clear the search or switch the filters."));
+const done=D.filter(e=>S.l[e[2]]).length;
+$("foot").textContent=done+" of "+D.length+" marked learned. Covers the calls used most for loading, slicing and measuring solids; the full API lists many more.";
+}
+$("q").oninput=render;chips();render();
+</script>
+</body>
+</html>

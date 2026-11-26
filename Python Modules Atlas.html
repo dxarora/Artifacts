@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Python Modules Atlas</title>
+<style>
+:root{--bg:#fafaf7;--fg:#1d1d1b;--mut:#6b6b66;--card:#fff;--bd:#e0dfd8;--ac:#1f5fbf;--ok:#1d7a46;--wa:#a86a00;--no:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161615;--fg:#ececE6;--mut:#a09f98;--card:#1f1f1d;--bd:#34332f;--ac:#7fb0ff;--ok:#5fcf8f;--wa:#e5b25a;--no:#f08a82}}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0}p.s{color:var(--mut);margin:0 0 12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+input,select,button,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 9px}
+button{cursor:pointer}button.on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.w{overflow-x:auto;border:1px solid var(--bd);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:1000px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}
+th{cursor:pointer;white-space:nowrap;font-size:12px;color:var(--mut);position:sticky;top:0;background:var(--card)}
+td.n{font-weight:600;white-space:nowrap}
+.t{font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.b{color:var(--ok)}.h{color:var(--wa)}.x{color:var(--no)}
+.sc{font-variant-numeric:tabular-nums;white-space:nowrap}
+a{color:var(--ac)}small,.m{color:var(--mut);font-size:12px}
+details{margin:14px 0;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+textarea{width:100%;min-height:80px;box-sizing:border-box;font-family:monospace;font-size:12px}
+</style></head><body><main>
+<h1>Python Modules Atlas</h1>
+<p class="s">Scientific, engineering and utility modules, split into Mac, Android (Termux and Pydroid only) and common views. Add your own entries below.</p>
+<div class="bar">
+<input id="q" placeholder="Search name, use, domain…" style="flex:1;min-width:160px">
+<select id="dm"></select>
+<span id="pv"></span>
+</div>
+<div class="w"><table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table></div>
+<p class="m" id="cnt"></p>
+<details><summary>How scores work and how far to trust them</summary>
+<p><b>Memory</b> is derived from an estimated import footprint in MB (under 40 scores 5, under 80 scores 4, under 150 scores 3, under 300 scores 2, otherwise 1). Footprints are rough figures from memory, not benchmarks, so measure on your device before relying on them. <b>Ease</b> and <b>Accuracy</b> are 1 to 5 judgments (accuracy means numerical maturity and validation, not a guarantee for your model). <b>Overall</b> averages the three. <b>Confidence</b> (H/M/L) says how sure the entry is. Android status: <i>Termux + Pydroid</i> means it should install or ship there, <i>Hard</i> means compiled dependencies make it unreliable, <i>No</i> means not practical. Verify repos, versions and citations before citing anything.</p></details>
+<details><summary>Add an entry</summary>
+<div class="g">
+<input id="f_n" placeholder="Module name"><input id="f_d" placeholder="Domain">
+<input id="f_u" placeholder="Uses"><input id="f_m" placeholder="Mac install (pip/conda…)">
+<select id="f_a"><option value="b">Android: Termux + Pydroid</option><option value="h">Android: Hard</option><option value="n">Android: No</option></select>
+<input id="f_mb" type="number" placeholder="Import MB"><input id="f_e" type="number" min="1" max="5" placeholder="Ease 1-5"><input id="f_x" type="number" min="1" max="5" placeholder="Accuracy 1-5">
+<select id="f_cf"><option>H</option><option selected>M</option><option>L</option></select>
+<input id="f_r" placeholder="GitHub owner/repo"><input id="f_c" placeholder="Citation">
+</div>
+<button id="add">Add entry</button> <small>Saved in this browser only.</small>
+<p class="m">To carry your entries elsewhere, copy the JSON, or paste JSON here and import.</p>
+<textarea id="io"></textarea><br>
+<button id="ex">Show my entries as JSON</button> <button id="im">Import pasted JSON</button> <button id="cl">Clear my entries</button>
+</details>
+<script>
+const R=[
+// name,domain,uses,mac,android(b/h/n),MB,ease,acc,conf,repo,citation
+["NumPy","Maths","Arrays, linear algebra, FFT, the base of everything","pip",'b',30,5,5,"H","numpy/numpy","Harris et al. 2020, Nature 585"],
+["SciPy","Maths","ODE solvers, optimisation, sparse solvers, interpolation, signal","pip",'b',50,4,5,"H","scipy/scipy","Virtanen et al. 2020, Nat. Methods 17"],
+["SymPy","Maths","Symbolic algebra, calculus, equation solving, codegen","pip",'b',70,4,4,"H","sympy/sympy","Meurer et al. 2017, PeerJ CS 3:e103"],
+["mpmath","Maths","Arbitrary-precision arithmetic and special functions","pip",'b',25,4,5,"H","mpmath/mpmath","—"],
+["CVXPY","Maths","Convex optimisation modelling","pip",'h',120,4,5,"M","cvxpy/cvxpy","Diamond & Boyd 2016, JMLR 17"],
+["JAX","Maths","Autodiff and accelerated numerics","pip",'n',250,3,5,"M","jax-ml/jax","Bradbury et al. 2018 (software)"],
+["Numba","Maths","JIT compilation of numeric Python loops","pip",'h',150,4,5,"M","numba/numba","Lam et al. 2015, LLVM-HPC"],
+["scikit-learn","Maths","Regression, clustering, surrogate models","pip",'b',110,5,4,"H","scikit-learn/scikit-learn","Pedregosa et al. 2011, JMLR 12"],
+["NetworkX","Maths","Graphs and network analysis","pip",'b',40,5,5,"H","networkx/networkx","Hagberg et al. 2008, SciPy Proc."],
+["scikit-fem","FEA","Pure-Python FEM assembly, many element types","pip",'b',70,4,4,"M","kinnala/scikit-fem","Gustafsson & McBain 2020, JOSS 5(52)"],
+["FElupe","FEA","Nonlinear continuum mechanics, hyperelasticity","pip",'b',80,4,4,"M","adtzlr/felupe","—"],
+["PyNite","FEA","3D frame and plate structural analysis","pip",'b',90,4,4,"M","JWock82/PyNite","—"],
+["anaStruct","FEA","2D beam and truss analysis","pip",'b',70,5,4,"M","ritchie46/anaStruct","—"],
+["SfePy","FEA","General PDE and FEM, multiphysics","pip",'h',120,3,4,"M","sfepy/sfepy","Cimrman et al. 2019, Adv. Comput. Math. 45"],
+["OpenSeesPy","FEA","Structural and earthquake engineering solver","pip",'h',90,3,5,"M","zhuminjie/OpenSeesPy","Zhu, McKenna & Scott 2018, SoftwareX 7"],
+["DOLFINx (FEniCSx)","FEA","Large-scale FEM with UFL forms, MPI","conda-forge",'n',300,2,5,"M","FEniCS/dolfinx","Baratta et al. 2023 (Zenodo)"],
+["meshio","FEA","Read and write mesh formats (VTK, Gmsh, Abaqus…)","pip",'b',50,5,5,"H","nschloe/meshio","—"],
+["Gmsh (Python API)","FEA","Mesh generation","pip",'h',60,3,5,"M","gitlab.onelab.info/gmsh/gmsh","Geuzaine & Remacle 2009, IJNME 79(11)"],
+["PyVista","FEA","3D visualisation of meshes and results (VTK)","pip",'n',200,4,5,"H","pyvista/pyvista","Sullivan & Kaszynski 2019, JOSS 4(37)"],
+["PyDy","Dynamics","Multibody dynamics via SymPy mechanics","pip",'b',100,3,4,"M","pydy/pydy","Gede et al. 2013, Multibody Syst. Dyn. 30"],
+["python-control","Dynamics","Control systems, transfer functions, state space","pip",'b',80,4,5,"H","python-control/python-control","Fuller et al. 2021, IEEE CDC"],
+["Assimulo","Dynamics","Stiff ODE and DAE solvers (SUNDIALS)","conda-forge",'h',70,2,5,"M","modelon-community/Assimulo","Andersson et al. 2015, Math. Comput. Simul. 116"],
+["PyBullet","Dynamics","Rigid-body physics, robotics simulation","pip",'h',40,3,3,"M","bulletphysics/bullet3","Coumans & Bai (pybullet.org)"],
+["Pymunk","Dynamics","2D rigid-body physics","pip",'h',25,5,3,"M","viblo/pymunk","—"],
+["PyChrono","Dynamics","Multibody, FEA and contact dynamics","conda",'n',150,2,4,"L","projectchrono/chrono","Tasora et al. 2016, Chrono"],
+["REBOUND","Dynamics","N-body gravitational integrator","pip",'h',40,4,5,"M","hannorein/rebound","Rein & Liu 2012, A&A 537, A128"],
+["Astropy","Physics","Units, coordinates, astronomy tools","pip",'h',120,4,5,"H","astropy/astropy","Astropy Collab. 2022, ApJ 935, 167"],
+["QuTiP","Physics","Quantum system simulation","pip",'h',120,3,5,"M","qutip/qutip","Johansson et al. 2012, CPC 183"],
+["Pint","Physics","Physical units and dimensional checks","pip",'b',40,5,5,"H","hgrecco/pint","—"],
+["CoolProp","Physics","Fluid and thermodynamic properties","pip",'h',40,4,5,"M","CoolProp/CoolProp","Bell et al. 2014, Ind. Eng. Chem. Res. 53"],
+["fluids","Physics","Fluid mechanics, piping, atmosphere, compressible flow","pip",'b',70,4,4,"M","CalebBell/fluids","—"],
+["ambiance","Physics","ISA standard atmosphere","pip",'b',35,5,4,"M","AeroPython/ambiance","—"],
+["Cantera","Physics","Chemical kinetics, thermodynamics, flames","pip",'n',80,3,5,"M","Cantera/cantera","Goodwin et al. (Zenodo)"],
+["AeroSandbox","Physics","Aircraft design optimisation, aero and structures","pip",'h',200,3,3,"M","peterdsharpe/AeroSandbox","Sharpe, MIT PhD thesis"],
+["OpenMDAO","Physics","Multidisciplinary analysis and optimisation","pip",'h',120,2,5,"M","OpenMDAO/OpenMDAO","Gray et al. 2019, Struct. Multidisc. Optim. 59"],
+["pandas","Practical","Tables, CSV and Excel handling, time series","pip",'b',70,5,5,"H","pandas-dev/pandas","McKinney 2010, SciPy Proc."],
+["Matplotlib","Practical","Plots and figures","pip",'b',60,4,5,"H","matplotlib/matplotlib","Hunter 2007, CiSE 9(3)"],
+["Plotly","Practical","Interactive charts","pip",'b',90,4,5,"H","plotly/plotly.py","—"],
+["openpyxl","Practical","Read and write Excel files","pip",'b',30,4,5,"H","foss.heptapod.net/openpyxl/openpyxl","—"],
+["Flask","Practical","Small web apps and APIs","pip",'b',30,5,5,"H","pallets/flask","—"],
+["Streamlit","Practical","Quick data and engineering dashboards","pip",'n',150,5,5,"M","streamlit/streamlit","—"],
+["Kivy","Practical","Cross-platform touch UI, Android packaging","pip",'h',90,3,4,"M","kivy/kivy","—"],
+["trimesh","CAD & Utilities","Load, inspect and slice STL, OBJ, PLY meshes","pip",'b',60,4,4,"H","mikedh/trimesh","—"],
+["ezdxf","CAD & Utilities","Read, write and view DXF drawings","pip",'b',40,4,5,"H","mozman/ezdxf","—"],
+["numpy-stl","CAD & Utilities","STL read, volume and mass properties","pip",'b',35,5,4,"M","wolph/numpy-stl","—"],
+["CadQuery","CAD & Utilities","Parametric solid CAD scripting (OpenCascade)","pip",'n',350,3,5,"M","CadQuery/cadquery","—"],
+["build123d","CAD & Utilities","Pythonic parametric CAD (OpenCascade)","pip",'n',350,4,5,"M","gumyr/build123d","—"],
+["pythonocc-core","CAD & Utilities","OpenCascade bindings, STEP and IGES viewing","conda-forge",'n',300,2,5,"M","tpaviot/pythonocc-core","Paviot (Zenodo)"],
+["Open3D","CAD & Utilities","Point clouds and mesh processing, viewer","pip",'n',300,3,4,"M","isl-org/Open3D","Zhou et al. 2018, arXiv:1801.09847"],
+["FreeCAD (Python API)","CAD & Utilities","Full CAD and FEM workbench, scriptable (app, not pip)","app",'n',400,3,5,"M","FreeCAD/FreeCAD","—"]
+];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const O=a=>({n:a[0],d:a[1],u:a[2],m:a[3],a:a[4],mb:+a[5]||0,e:+a[6]||3,x:+a[7]||3,cf:a[8],r:a[9],c:a[10]||'—'});
+let C=[];try{C=JSON.parse(localStorage.getItem('pm')||'[]')}catch(e){}
+const all=()=>R.concat(C).map(O);
+const ms=mb=>mb<40?5:mb<80?4:mb<150?3:mb<300?2:1;
+const sc=o=>((o.e+o.x+ms(o.mb))/3);
+const AL={b:['Termux + Pydroid','b'],h:['Hard','h'],n:['No','x']};
+let view='all',sk='o',sd=-1;
+const cols=[['n','Module'],['d','Domain'],['u','Uses'],['m','Mac'],['a','Android'],['mb','Memory (MB est.)'],['e','Ease'],['x','Accuracy'],['o','Overall'],['cf','Conf.'],['r','Repo'],['c','Citation']];
+const V=[['all','All'],['mac','Mac'],['and','Android'],['com','Common to both']];
+document.getElementById('pv').innerHTML=V.map(v=>'<button data-v="'+v[0]+'">'+v[1]+'</button>').join(' ');
+document.getElementById('hd').innerHTML=cols.map(c=>'<th data-k="'+c[0]+'">'+c[1]+'</th>').join('');
+function fill(){const ds=['All domains',...new Set(all().map(o=>o.d))];const s=document.getElementById('dm'),cur=s.value;s.innerHTML=ds.map(d=>'<option>'+esc(d)+'</option>').join('');if(ds.includes(cur))s.value=cur}
+function draw(){
+const q=document.getElementById('q').value.toLowerCase(),dm=document.getElementById('dm').value;
+let rows=all().filter(o=>(dm==='All domains'||o.d===dm)&&(o.n+o.d+o.u).toLowerCase().includes(q));
+if(view==='and')rows=rows.filter(o=>o.a!=='n');
+if(view==='com')rows=rows.filter(o=>o.a==='b');
+rows.forEach(o=>o.o=sc(o));
+rows.sort((a,b)=>{let x=a[sk],y=b[sk];return (typeof x==='string'?x.localeCompare(y):x-y)*(sk==='o'||sk==='e'||sk==='x'?sd:-sd)});
+document.getElementById('tb').innerHTML=rows.map(o=>{
+const rp=o.r&&o.r.includes('/')?'<a target="_blank" rel="noopener" href="https://'+(o.r.split('/')[0].includes('.')?'':'github.com/')+esc(o.r)+'">'+esc(o.r)+'</a>':esc(o.r||'—');
+const al=AL[o.a]||AL.n;
+return '<tr><td class="n">'+esc(o.n)+'</td><td>'+esc(o.d)+'</td><td>'+esc(o.u)+'</td><td>'+esc(o.m)+'</td><td><span class="t '+al[1]+'">'+al[0]+'</span></td><td class="sc">'+(o.mb?'~'+o.mb+' ('+ms(o.mb)+'/5)':'—')+'</td><td class="sc">'+o.e+'/5</td><td class="sc">'+o.x+'/5</td><td class="sc"><b>'+o.o.toFixed(1)+'</b></td><td>'+esc(o.cf)+'</td><td>'+rp+'</td><td><small>'+esc(o.c)+'</small></td></tr>'}).join('');
+document.getElementById('cnt').textContent=rows.length+' modules shown';
+document.querySelectorAll('#pv button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+}
+document.getElementById('pv').onclick=e=>{if(e.target.dataset.v){view=e.target.dataset.v;draw()}};
+document.getElementById('hd').onclick=e=>{const k=e.target.dataset.k;if(!k)return;if(sk===k)sd=-sd;else{sk=k;sd=-1}draw()};
+['q','dm'].forEach(i=>document.getElementById(i).oninput=draw);
+const g=i=>document.getElementById(i);
+const save=()=>{try{localStorage.setItem('pm',JSON.stringify(C))}catch(e){}};
+g('add').onclick=()=>{if(!g('f_n').value.trim())return;C.push([g('f_n').value,g('f_d').value||'Other',g('f_u').value,g('f_m').value||'pip',g('f_a').value,g('f_mb').value,g('f_e').value,g('f_x').value,g('f_cf').value,g('f_r').value,g('f_c').value]);save();fill();draw()};
+g('ex').onclick=()=>{g('io').value=JSON.stringify(C)};
+g('im').onclick=()=>{try{const a=JSON.parse(g('io').value);if(Array.isArray(a)){C=C.concat(a);save();fill();draw()}}catch(e){g('io').value='Invalid JSON'}};
+g('cl').onclick=()=>{C=[];save();fill();draw()};
+fill();draw();
+</script></main></body></html>
